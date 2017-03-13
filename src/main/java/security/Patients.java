@@ -1,12 +1,10 @@
 package security;
 
-import ldapConnection.Connector;
-import ldapConnection.LoginService;
+import ldapConnection.IConnector;
+import ldapConnection.MasterConnector;
 import org.forgerock.opendj.ldap.Entry;
-import org.forgerock.opendj.ldap.LdapException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import user.AuthenticationStatus;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -25,20 +23,14 @@ public class Patients extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        /*String requesterDn = request.getParameter("requesterDn");
+        String requesterDn = request.getParameter("requesterDn");
 
         JSONObject responseJson;
         JSONArray responseJsonArray = new JSONArray();
 
-        Connector connector = Connector.getInstance();
-        try {
-            LoginService.masterLogin(connector, "qwerty");
-        } catch (LdapException e) {
-            e.printStackTrace();
-        }
+        IConnector connector = MasterConnector.getInstance();
 
         ArrayList<Entry> searchedEntries = null;
-        try {
             searchedEntries = connector.readEntires("owner=" + requesterDn);
             for (Entry e : searchedEntries) {
                 responseJson = new JSONObject();
@@ -46,10 +38,5 @@ public class Patients extends HttpServlet {
                 responseJsonArray.add(responseJson);
             }
             response.getWriter().write(responseJsonArray.toJSONString());
-        } catch (LdapException e) {
-            response.getWriter().write("ERROR - LdapException");
-        }
-        */
-        response.getWriter().write("HI");
     }
 }

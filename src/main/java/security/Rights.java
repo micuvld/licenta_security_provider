@@ -1,10 +1,9 @@
 package security;
 
-import ldapConnection.Connector;
-import ldapConnection.LoginService;
+import ldapConnection.IConnector;
+import ldapConnection.MasterConnector;
 import org.forgerock.opendj.ldap.Entry;
-import org.forgerock.opendj.ldap.LdapException;
-import org.json.simple.JSONArray;
+import org.forgerock.opendj.ldap.ErrorResultException;
 import org.json.simple.JSONObject;
 
 import javax.servlet.annotation.WebServlet;
@@ -30,18 +29,17 @@ public class Rights extends HttpServlet {
 
         JSONObject responseJson = new JSONObject();
 
-        Connector connector = Connector.getInstance();
+        IConnector connector = MasterConnector.getInstance();
+
+        Entry rightsRequesterEntry = null;
         try {
-            LoginService.masterLogin(connector, "qwerty");
-        } catch (LdapException e) {
+            rightsRequesterEntry = connector.readEntry(rightsRequesterDn);
+        } catch (ErrorResultException e) {
             e.printStackTrace();
         }
-
-        Entry rightsRequesterEntry = connector.readEntry(rightsRequesterDn);
         System.out.println(rightsRequesterEntry.getName());
         if (rightsRequesterEntry != null) {
             ArrayList<Entry> searchedEntries = null;
-            try {
                 searchedEntries = connector.readEntires("owner=" + rightsRequesterDn);
                 for (Entry e : searchedEntries) {
                     if (e.getAttribute("member").contains(targetDn)) {
@@ -53,12 +51,6 @@ public class Rights extends HttpServlet {
                     }
 
                 }
-
-            } catch (LdapException e) {
-                responseJson.put("status", "CONNECTION FAILED - LDAP EXCEPTION");
-                response.getWriter().write(responseJson.toJSONString());
-                e.printStackTrace(System.out);
-            }
         }
     }
 }

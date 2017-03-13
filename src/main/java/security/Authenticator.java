@@ -1,13 +1,11 @@
 package security;
 
-import ldapConnection.Connector;
-import ldapConnection.LoginService;
+import ldapConnection.IConnector;
+import ldapConnection.MasterConnector;
 import org.forgerock.opendj.ldap.Entry;
-import org.forgerock.opendj.ldap.EntryNotFoundException;
-import org.forgerock.opendj.ldap.LdapException;
+import org.forgerock.opendj.ldap.ErrorResultException;
 import org.json.simple.JSONObject;
 import user.AuthenticationStatus;
-import user.User;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -30,19 +28,14 @@ public class Authenticator extends HttpServlet {
 
         JSONObject responseJson = new JSONObject();
 
-        Connector connector = Connector.getInstance();
-        try {
-            LoginService.masterLogin(connector, "qwerty");
-        } catch (LdapException e) {
-            e.printStackTrace();
-        }
+        IConnector connector = MasterConnector.getInstance();
 
         Entry searchedEntry = null;
         try {
             searchedEntry = connector.readEntry(requesterDn);
             responseJson.put("status", AuthenticationStatus.APPROVED.ordinal() + "");
             response.getWriter().write(responseJson.toJSONString());
-        } catch (LdapException e) {
+        } catch (ErrorResultException e) {
             responseJson.put("status", AuthenticationStatus.DENIED.ordinal() + "");
             response.getWriter().write(responseJson.toJSONString());
         }

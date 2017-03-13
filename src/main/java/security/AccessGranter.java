@@ -4,21 +4,20 @@ import ldapConnection.IConnector;
 import ldapConnection.MasterConnector;
 import org.forgerock.opendj.ldap.Entry;
 import org.forgerock.opendj.ldap.ErrorResultException;
-
 import org.json.simple.JSONObject;
+import user.AuthenticationStatus;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
- * Created by vlad on 02.12.2016.
+ * Created by vlad on 15.02.2017.
  */
-@WebServlet("/gateway")
-public class Gateway extends HttpServlet {
+@WebServlet("/access")
+public class AccessGranter extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws javax.servlet.ServletException, IOException {
 
     }
@@ -31,23 +30,16 @@ public class Gateway extends HttpServlet {
 
         IConnector connector = MasterConnector.getInstance();
 
-        ArrayList<Entry> searchedEntries = null;
-        try {
-            searchedEntries = connector.readEntires("member=" + patientDn);
-            System.out.println("member=" + patientDn + " ou=Groups");
-            for (Entry e : searchedEntries) {
-                String ownerDn = e.getAttribute("owner").firstValueAsString();
-                Entry groupOwner = connector.readEntry(
-                        e.getAttribute("owner").firstValueAsString());
+        //GRANT CHECK
 
-                if (groupOwner != null) {
-                    responseJson.put("gateway", ownerDn);
-                    responseJson.put("hostname", "http://localhost:18080/GatewayHost");
-                }
-            }
+        Entry searchedEntry = null;
+        try {
+            searchedEntry = connector.readEntry(requesterDn);
+            responseJson.put("status", AuthenticationStatus.APPROVED.ordinal() + "");
             response.getWriter().write(responseJson.toJSONString());
         } catch (ErrorResultException e) {
-            response.getWriter().write("ERROR - LdapException");
+            responseJson.put("status", AuthenticationStatus.DENIED.ordinal() + "");
+            response.getWriter().write(responseJson.toJSONString());
         }
     }
 }
